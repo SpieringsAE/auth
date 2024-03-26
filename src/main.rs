@@ -10,17 +10,27 @@ async fn main() {
     };
     use sha_crypt::{Sha512Params, sha512_simple, sha512_check};
     use leptos::get_configuration;
+    use serde::Deserialize;
 
-    #[derive(Clone)]
+    #[derive(Clone,Deserialize)]
     struct Credentials{
         sn: String,
         client_key: String
     }
 
-    #[derive(Debug,Clone)]
+    #[derive(Clone)]
     struct User {
         id: i64,
         pw_hash: String,
+    }
+
+    impl std::fmt::Debug for User {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.debug_struct("User")
+            .field("id", &self.id)
+            .field("pw_hash", &"[redacted]")
+            .finish()
+        }
     }
 
     impl AuthUser for User {
@@ -60,6 +70,7 @@ async fn main() {
         }
     }
 
+    #[axum::debug_handler]
     async fn login(
         mut auth_session: AuthSession<Backend>,
         Form(creds): Form<Credentials>,
