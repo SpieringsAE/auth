@@ -103,14 +103,42 @@ async fn main() {
 			return Redirect::to("/home").into_response();
 		}
 		axum::response::Html("
-			<h1>Log in</h1>
-			<form method='post' action='/login'>
-			<input type='text' name='sn' value='test'>
-			<br/>
-			<input type='text' name='client_key' value='test'>
-			<br/>
-			<input type='submit' value='log in'>
-			</form>
+			<style>
+			body {
+				font-family: sans-serif;
+				background: white;
+			}
+			</style>
+			<title>Log in</title>
+			<div style='display:flex; flex-direction:row; justify-content:center; height: 100%; overflow:auto'>
+				<div style='display:flex; flex-direction:column; justify-content:center'>
+					<div style='display:flex; flex-direction:row; justify-content:center'>
+						<img src='/GOcontroll_logo_nontransparent.jpg' style='max-width:50%; padding-bottom:50px'/>
+					</div>
+					<div style='display:flex; flex-direction:row; justify-content:center'>
+						<div style='background:gray; padding:20px; display:flex; flex-direction: column; justify-content:space-evenly'>
+							<div style='display:flex; flex-direction:row; justify-content:center'>
+								<h1>Log in</h1>
+							</div>
+							<form method='post' action='/login'>
+							<div style='display:flex; flex-direction:row; justify-content:space-between'>
+								<label for='sn' style='padding-right:10px'>Serial number </label>
+								<input type='text' id='sn' name='sn' value='test'>
+							</div>
+							<br/>
+							<div style='display:flex; flex-direction:row; justify-content:space-between'>
+								<label for='client_key'>Login token </label>
+								<input type='password' id='client_key' name='client_key' value='test'>
+							</div>
+							<br/>
+							<div style='display:flex; flex-direction:row; justify-content:center'>
+								<input type='submit' value='log in'>
+							</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
 		").into_response()
 		
 	}
@@ -128,11 +156,17 @@ async fn main() {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store);
     let sha_params = Sha512Params::new(sha_crypt::ROUNDS_DEFAULT).expect("could not create hash parameters");
+
     let client_key = option_env!("CLIENT_KEY").unwrap_or("Moduline");
-    // let mut sn = String::from_utf8(std::process::Command::new("go-sn").arg("r")
-    // .output().expect("Couldn't get the controllers serial number")
-    // .stdout).expect("serial number wasn't valid utf-8");
+	//when deployed use the go-sn binary to get the serial number
+	#[cfg(target_arch = "aarch64")]
+    let mut sn = String::from_utf8(std::process::Command::new("go-sn").arg("r")
+    .output().expect("Couldn't get the controllers serial number")
+    .stdout).expect("serial number wasn't valid utf-8");
+	//when developing set the sn to test
+	#[cfg(not(target_arch = "aarch64"))]
 	let mut sn = "test".to_owned();
+
     sn.push_str(client_key);
     let backend = Backend{
         user: User { id: 1, pw_hash: sha512_simple(&sn, &sha_params).expect("failed to create login token")}
