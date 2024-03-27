@@ -1,5 +1,5 @@
 [package]
-name = "auth"
+name = "go-web-interface"
 version = "0.1.0"
 edition = "2021"
 
@@ -48,7 +48,9 @@ panic = "abort"
 
 [package.metadata.leptos]
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
-output-name = "auth"
+output-name = "go-web-interface"
+
+#bin-target-triple = "aarch64-unknown-linux-gnu"
 
 # The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
 site-root = "target/site"
@@ -66,7 +68,7 @@ style-file = "style/main.scss"
 assets-dir = "public"
 
 # The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
-site-addr = "127.0.0.1:3000"
+site-addr = "0.0.0.0:3000"
 
 # The port to use for automatic reload monitoring
 reload-port = 3001

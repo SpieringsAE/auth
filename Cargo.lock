@@ -112,28 +112,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "auth"
-version = "0.1.0"
-dependencies = [
- "axum",
- "axum-login",
- "console_error_panic_hook",
- "http 1.1.0",
- "leptos",
- "leptos_axum",
- "leptos_meta",
- "leptos_router",
- "serde",
- "sha-crypt",
- "thiserror",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -810,6 +788,28 @@ dependencies = [
  "serde_json",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "go-web-interface"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "axum-login",
+ "console_error_panic_hook",
+ "http 1.1.0",
+ "leptos",
+ "leptos_axum",
+ "leptos_meta",
+ "leptos_router",
+ "serde",
+ "sha-crypt",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "wasm-bindgen",
 ]
 
 [[package]]

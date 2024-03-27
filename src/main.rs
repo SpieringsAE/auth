@@ -3,8 +3,8 @@
 async fn main() {
     use axum::{async_trait, http::StatusCode, response::{IntoResponse, Redirect}, routing::{get, post}, Form, Router};
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use auth::app::*;
-    use auth::fileserv::file_and_error_handler;
+    use go_web_interface::app::*;
+    use go_web_interface::fileserv::file_and_error_handler;
     use axum_login::{
         login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayerBuilder, AuthSession, AuthUser, AuthnBackend, UserId
     };
@@ -70,7 +70,6 @@ async fn main() {
         }
     }
 
-    #[axum::debug_handler]
     async fn login(
         mut auth_session: AuthSession<Backend>,
         Form(creds): Form<Credentials>,
@@ -85,17 +84,36 @@ async fn main() {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
 
-        Redirect::to("/").into_response()
+        Redirect::to("/home").into_response()
     }
 
     async fn logout(
         mut auth_session: AuthSession<Backend>
     ) -> impl IntoResponse {
         match auth_session.logout().await {
-            Ok(_) => Redirect::to("/login").into_response(),
+            Ok(_) => Redirect::to("/").into_response(),
             Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }
+
+	async fn login_page(
+		auth_session: AuthSession<Backend>,
+	) -> impl IntoResponse {
+		if auth_session.user.is_some(){
+			return Redirect::to("/home").into_response();
+		}
+		axum::response::Html("
+			<h1>Log in</h1>
+			<form method='post' action='/login'>
+			<input type='text' name='sn' value='test'>
+			<br/>
+			<input type='text' name='client_key' value='test'>
+			<br/>
+			<input type='submit' value='log in'>
+			</form>
+		").into_response()
+		
+	}
 
     // Setting get_configuration(None) means we'll be using cargo-leptos's env values
     // For deployment these variables are:
@@ -111,9 +129,10 @@ async fn main() {
     let session_layer = SessionManagerLayer::new(session_store);
     let sha_params = Sha512Params::new(sha_crypt::ROUNDS_DEFAULT).expect("could not create hash parameters");
     let client_key = option_env!("CLIENT_KEY").unwrap_or("Moduline");
-    let mut sn = String::from_utf8(std::process::Command::new("go-sn").arg("r")
-    .output().expect("Couldn't get the controllers serial number")
-    .stdout).expect("serial number wasn't valid utf-8");
+    // let mut sn = String::from_utf8(std::process::Command::new("go-sn").arg("r")
+    // .output().expect("Couldn't get the controllers serial number")
+    // .stdout).expect("serial number wasn't valid utf-8");
+	let mut sn = "test".to_owned();
     sn.push_str(client_key);
     let backend = Backend{
         user: User { id: 1, pw_hash: sha512_simple(&sn, &sha_params).expect("failed to create login token")}
@@ -125,9 +144,10 @@ async fn main() {
         .leptos_routes(&leptos_options, routes, App)
         .fallback(file_and_error_handler)
         .with_state(leptos_options)
-        .route_layer(login_required!(Backend , login_url = "/login"))
+        .route_layer(login_required!(Backend , login_url = "/"))
         .route("/login", post(login))
-        .route("/logout", get(logout))
+		.route("/", get(login_page))
+        .route("/logout", post(logout))
         .layer(auth_layer);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
