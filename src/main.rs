@@ -76,14 +76,13 @@ async fn main() {
     ) -> impl IntoResponse {
         let user = match auth_session.authenticate(creds.clone()).await {
             Ok(Some(user)) => user,
-            Ok(None) => return StatusCode::UNAUTHORIZED.into_response(),
+            Ok(None) => return StatusCode::UNAUTHORIZED.into_response(), 
             Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         };
 
         if auth_session.login(&user).await.is_err() {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
-
         Redirect::to("/home").into_response()
     }
 
@@ -99,7 +98,7 @@ async fn main() {
 	async fn login_page(
 		auth_session: AuthSession<Backend>,
 	) -> impl IntoResponse {
-		if auth_session.user.is_some(){
+		if auth_session.user.is_some(){ // user is logged in, pop them over to the application
 			return Redirect::to("/home").into_response();
 		}
 		axum::response::Html("
@@ -112,9 +111,11 @@ async fn main() {
 			<title>Log in</title>
 			<div style='display:flex; flex-direction:row; justify-content:center; height: 100%; overflow:auto'>
 				<div style='display:flex; flex-direction:column; justify-content:center'>
-					<div style='display:flex; flex-direction:row; justify-content:center'>
-						<img src='/GOcontroll_logo_nontransparent.jpg' style='max-width:50%; padding-bottom:50px'/>
-					</div>
+					<a href='https://gocontroll.com'>
+						<div style='display:flex; flex-direction:row; justify-content:center'>
+							<img src='/GOcontroll_logo_nontransparent.jpg' alt='GOcontroll logo' style='max-width:50%; padding-bottom:50px'/>
+						</div>
+					</a>
 					<div style='display:flex; flex-direction:row; justify-content:center'>
 						<div style='background:gray; padding:20px; display:flex; flex-direction: column; justify-content:space-evenly'>
 							<div style='display:flex; flex-direction:row; justify-content:center'>
